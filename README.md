@@ -8,16 +8,16 @@ A RESTful API built with **Node.js**, **Express**, and **MongoDB (Mongoose)** fo
 
 ## 🚀 Tech Stack
 
-| Technology | Purpose |
-|---|---|
-| Node.js + Express | Server & routing |
-| MongoDB + Mongoose | Database & ODM |
-| JWT (jsonwebtoken) | Authentication |
-| bcryptjs | Password hashing |
-| Multer | Image/file uploads |
-| express-validator | Input validation |
-| dotenv | Environment variables |
-| cors | Cross-Origin support |
+| Technology         | Purpose               |
+| ------------------ | --------------------- |
+| Node.js + Express  | Server & routing      |
+| MongoDB + Mongoose | Database & ODM        |
+| JWT (jsonwebtoken) | Authentication        |
+| bcryptjs           | Password hashing      |
+| Multer             | Image/file uploads    |
+| express-validator  | Input validation      |
+| dotenv             | Environment variables |
+| cors               | Cross-Origin support  |
 
 ---
 
@@ -65,6 +65,7 @@ JWT_SECRET_KEY=your_jwt_secret_key
 The `JWT_SECRET_KEY` is any random secret string used to sign and verify tokens. You can generate one using any of these methods:
 
 **Option 1 — Node.js (recommended):**
+
 ```bash
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
@@ -72,12 +73,14 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 **Option 2 — Online generator:**
 Go to [https://generate-secret.vercel.app/64](https://generate-secret.vercel.app/64) and copy the generated key.
 
-**Option 3 — Write your own string** *(not recommended for production)*:
+**Option 3 — Write your own string** _(not recommended for production)_:
+
 ```env
 JWT_SECRET_KEY=my_super_secret_key_123
 ```
 
 Then paste the result in `.env`:
+
 ```env
 JWT_SECRET_KEY=a3f9c2e1d7b4e8a2c6f0d1e5b9c3a7f2e4d8b6c0a1e3d5f7b2c4a6e8d0f1b3...
 ```
@@ -107,11 +110,13 @@ Authorization: Bearer <your_token>
 
 ### User Roles
 
-| Role | Permissions |
-|---|---|
-| `USER` | Read courses, view profile |
-| `MANAGER` | Create & delete courses |
-| `ADMIN` | Delete courses |
+| Role      | Permissions                                                              |
+| --------- | ------------------------------------------------------------------------ |
+| `USER`    | Login, Register, View courses only                                       |
+| `MANAGER` | All USER permissions + Create / Update / Delete courses + View all users |
+| `ADMIN`   | All MANAGER permissions                                                  |
+
+> 🔒 **Note:** When registering, the role is always set to `USER` automatically. `ADMIN` and `MANAGER` roles must be assigned manually from the database.
 
 ---
 
@@ -133,11 +138,11 @@ The token encodes the following user data:
 
 ### Token Settings
 
-| Property | Value |
-|---|---|
-| Algorithm | `HS256` (default) |
+| Property   | Value                        |
+| ---------- | ---------------------------- |
+| Algorithm  | `HS256` (default)            |
 | Secret Key | `JWT_SECRET_KEY` from `.env` |
-| Expiry | `1 minute` (`expiresIn: '1m'`) |
+| Expiry     | `1 day` (`expiresIn: '1d'`)  |
 
 ### How it Works (Flow)
 
@@ -146,7 +151,7 @@ User registers / logs in
         ↓
 Server collects → { email, id, role }
         ↓
-jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: '1m' })
+jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: '1d' })
         ↓
 Token returned to client
         ↓
@@ -160,15 +165,17 @@ Request is allowed ✅ or rejected ❌
 ### generateJwt Utility (source)
 
 ```js
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 
 module.exports = async (payload) => {
-  const token = await jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: '1m' });
+  const token = await jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+    expiresIn: "1d",
+  });
   return token;
 };
 ```
 
-> ⚠️ **Note:** The token expires after **1 minute**. You must login again to get a new token.
+> ℹ️ **Note:** The token expires after **1 day**. You must login again to get a new token.
 
 ---
 
@@ -192,14 +199,15 @@ Register a new user with an avatar image.
 
 **Request:** `multipart/form-data`
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `firstName` | String | ✅ | User's first name |
-| `lastName` | String | ✅ | User's last name |
-| `email` | String | ✅ | Must be a valid, unique email |
-| `password` | String | ✅ | User's password (will be hashed) |
-| `role` | String | ❌ | `USER`, `MANAGER`, or `ADMIN` (default: `USER`) |
-| `avatar` | File | ✅ | Profile image (jpg, jpeg, png, gif, webp) |
+| Field       | Type   | Required | Description                               |
+| ----------- | ------ | -------- | ----------------------------------------- |
+| `firstName` | String | ✅       | User's first name                         |
+| `lastName`  | String | ✅       | User's last name                          |
+| `email`     | String | ✅       | Must be a valid, unique email             |
+| `password`  | String | ✅       | User's password (will be hashed)          |
+| `avatar`    | File   | ✅       | Profile image (jpg, jpeg, png, gif, webp) |
+
+> 🔒 `role` is always set to `USER` automatically — you cannot register as `ADMIN` or `MANAGER`.
 
 **Response:** `200 OK`
 
@@ -223,10 +231,10 @@ Register a new user with an avatar image.
 
 **Error Responses:**
 
-| Status | Reason |
-|---|---|
-| `400` | Email already exists |
-| `400` | Invalid file type (non-image) |
+| Status | Reason                        |
+| ------ | ----------------------------- |
+| `400`  | Email already exists          |
+| `400`  | Invalid file type (non-image) |
 
 ---
 
@@ -258,9 +266,9 @@ Login with email and password.
 
 **Error Responses:**
 
-| Status | Reason |
-|---|---|
-| `400` | Invalid email or password |
+| Status | Reason                    |
+| ------ | ------------------------- |
+| `400`  | Invalid email or password |
 
 ---
 
@@ -268,7 +276,7 @@ Login with email and password.
 
 Get a paginated list of all users.
 
-**Auth required:** ✅ Yes (any authenticated user)
+**Auth required:** ✅ Yes — `ADMIN` or `MANAGER` only
 
 **Request Headers:**
 
@@ -278,10 +286,10 @@ Authorization: Bearer <token>
 
 **Query Parameters:**
 
-| Param | Type | Default | Description |
-|---|---|---|---|
-| `page` | Number | `1` | Page number |
-| `limit` | Number | `10` | Results per page |
+| Param   | Type   | Default | Description      |
+| ------- | ------ | ------- | ---------------- |
+| `page`  | Number | `1`     | Page number      |
+| `limit` | Number | `10`    | Results per page |
 
 **Response:** `200 OK`
 
@@ -308,9 +316,10 @@ Authorization: Bearer <token>
 
 **Error Responses:**
 
-| Status | Reason |
-|---|---|
-| `401` | Token is required or invalid |
+| Status | Reason                                        |
+| ------ | --------------------------------------------- |
+| `401`  | Token is required or invalid                  |
+| `401`  | Role not authorized (USER cannot access this) |
 
 ---
 
@@ -324,10 +333,10 @@ Get a paginated list of all courses.
 
 **Query Parameters:**
 
-| Param | Type | Default | Description |
-|---|---|---|---|
-| `page` | Number | `1` | Page number |
-| `limit` | Number | `10` | Results per page |
+| Param   | Type   | Default | Description      |
+| ------- | ------ | ------- | ---------------- |
+| `page`  | Number | `1`     | Page number      |
+| `limit` | Number | `10`    | Results per page |
 
 **Response:** `200 OK`
 
@@ -353,7 +362,7 @@ Get a paginated list of all courses.
 Create a new course.
 
 **Auth required:** ✅ Yes
-**Allowed roles:** `MANAGER` only
+**Allowed roles:** `ADMIN` or `MANAGER`
 
 **Request Headers:**
 
@@ -372,10 +381,10 @@ Authorization: Bearer <token>
 
 **Validation Rules:**
 
-| Field | Rule |
-|---|---|
-| `name` | Required, minimum 3 characters |
-| `price` | Required |
+| Field   | Rule                           |
+| ------- | ------------------------------ |
+| `name`  | Required, minimum 3 characters |
+| `price` | Required                       |
 
 **Response:** `201 Created`
 
@@ -394,10 +403,10 @@ Authorization: Bearer <token>
 
 **Error Responses:**
 
-| Status | Reason |
-|---|---|
-| `400` | Validation error (name/price missing or invalid) |
-| `401` | Token missing, invalid, or role not authorized |
+| Status | Reason                                           |
+| ------ | ------------------------------------------------ |
+| `400`  | Validation error (name/price missing or invalid) |
+| `401`  | Token missing, invalid, or role not authorized   |
 
 ---
 
@@ -409,8 +418,8 @@ Get a single course by ID.
 
 **URL Params:**
 
-| Param | Description |
-|---|---|
+| Param      | Description                     |
+| ---------- | ------------------------------- |
 | `courseId` | The MongoDB `_id` of the course |
 
 **Response:** `200 OK`
@@ -430,9 +439,9 @@ Get a single course by ID.
 
 **Error Responses:**
 
-| Status | Reason |
-|---|---|
-| `404` | Course not found |
+| Status | Reason           |
+| ------ | ---------------- |
+| `404`  | Course not found |
 
 ---
 
@@ -440,15 +449,22 @@ Get a single course by ID.
 
 Update an existing course (partial update).
 
-**Auth required:** ❌ No
+**Auth required:** ✅ Yes
+**Allowed roles:** `ADMIN` or `MANAGER`
+
+**Request Headers:**
+
+```
+Authorization: Bearer <token>
+```
 
 **URL Params:**
 
-| Param | Description |
-|---|---|
+| Param      | Description                     |
+| ---------- | ------------------------------- |
 | `courseId` | The MongoDB `_id` of the course |
 
-**Request Body:** `application/json` *(send only the fields to update)*
+**Request Body:** `application/json` _(send only the fields to update)_
 
 ```json
 {
@@ -471,6 +487,12 @@ Update an existing course (partial update).
 }
 ```
 
+**Error Responses:**
+
+| Status | Reason                                         |
+| ------ | ---------------------------------------------- |
+| `401`  | Token missing, invalid, or role not authorized |
+
 ---
 
 ### `DELETE /api/courses/:courseId`
@@ -488,8 +510,8 @@ Authorization: Bearer <token>
 
 **URL Params:**
 
-| Param | Description |
-|---|---|
+| Param      | Description                     |
+| ---------- | ------------------------------- |
 | `courseId` | The MongoDB `_id` of the course |
 
 **Response:** `200 OK`
@@ -503,9 +525,9 @@ Authorization: Bearer <token>
 
 **Error Responses:**
 
-| Status | Reason |
-|---|---|
-| `401` | Token missing, invalid, or role not authorized |
+| Status | Reason                                         |
+| ------ | ---------------------------------------------- |
+| `401`  | Token missing, invalid, or role not authorized |
 
 ---
 
@@ -551,11 +573,11 @@ All errors follow this structure:
 }
 ```
 
-| Status Text | Meaning |
-|---|---|
-| `SUCCESS` | Request completed successfully |
-| `FAIL` | Client-side error (bad input, not found, etc.) |
-| `ERROR` | Server-side or auth error |
+| Status Text | Meaning                                        |
+| ----------- | ---------------------------------------------- |
+| `SUCCESS`   | Request completed successfully                 |
+| `FAIL`      | Client-side error (bad input, not found, etc.) |
+| `ERROR`     | Server-side or auth error                      |
 
 ---
 
@@ -568,6 +590,7 @@ GET /uploads/<filename>
 ```
 
 **Example:**
+
 ```
 https://nodejs-courses-api-rjzx.onrender.com/uploads/user-1234567890.jpg
 ```
@@ -597,13 +620,13 @@ npm start
 
 ## 📋 Routes Summary
 
-| Method | Endpoint | Auth | Role | Description |
-|---|---|---|---|---|
-| `GET` | `/api/courses` | ❌ | - | Get all courses (paginated) |
-| `POST` | `/api/courses` | ✅ | MANAGER | Create a new course |
-| `GET` | `/api/courses/:courseId` | ❌ | - | Get single course |
-| `PATCH` | `/api/courses/:courseId` | ❌ | - | Update a course |
-| `DELETE` | `/api/courses/:courseId` | ✅ | ADMIN, MANAGER | Delete a course |
-| `GET` | `/api/users` | ✅ | Any | Get all users (paginated) |
-| `POST` | `/api/users/register` | ❌ | - | Register new user |
-| `POST` | `/api/users/login` | ❌ | - | Login user |
+| Method   | Endpoint                 | Auth | Role           | Description                            |
+| -------- | ------------------------ | ---- | -------------- | -------------------------------------- |
+| `GET`    | `/api/courses`           | ❌   | -              | Get all courses (paginated)            |
+| `POST`   | `/api/courses`           | ✅   | ADMIN, MANAGER | Create a new course                    |
+| `GET`    | `/api/courses/:courseId` | ❌   | -              | Get single course                      |
+| `PATCH`  | `/api/courses/:courseId` | ✅   | ADMIN, MANAGER | Update a course                        |
+| `DELETE` | `/api/courses/:courseId` | ✅   | ADMIN, MANAGER | Delete a course                        |
+| `GET`    | `/api/users`             | ✅   | ADMIN, MANAGER | Get all users (paginated)              |
+| `POST`   | `/api/users/register`    | ❌   | -              | Register new user (role always = USER) |
+| `POST`   | `/api/users/login`       | ❌   | -              | Login user                             |
