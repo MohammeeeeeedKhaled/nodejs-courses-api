@@ -60,6 +60,38 @@ MONGO_URL=your_mongodb_connection_string
 JWT_SECRET_KEY=your_jwt_secret_key
 ```
 
+### 🔑 How to generate `JWT_SECRET_KEY`
+
+The `JWT_SECRET_KEY` is any random secret string used to sign and verify tokens. You can generate one using any of these methods:
+
+**Option 1 — Node.js (recommended):**
+```bash
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+```
+
+**Option 2 — Online generator:**
+Go to [https://generate-secret.vercel.app/64](https://generate-secret.vercel.app/64) and copy the generated key.
+
+**Option 3 — Write your own string** *(not recommended for production)*:
+```env
+JWT_SECRET_KEY=my_super_secret_key_123
+```
+
+Then paste the result in `.env`:
+```env
+JWT_SECRET_KEY=a3f9c2e1d7b4e8a2c6f0d1e5b9c3a7f2e4d8b6c0a1e3d5f7b2c4a6e8d0f1b3...
+```
+
+> ⚠️ **Never share or commit your `.env` file to GitHub.** Make sure `.env` is listed in `.gitignore`.
+
+### 🍃 How to get `MONGO_URL`
+
+Go to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) → Create a cluster → Connect → **Drivers** → Copy the connection string:
+
+```env
+MONGO_URL=mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/<dbname>?retryWrites=true&w=majority
+```
+
 ---
 
 ## 🔐 Authentication & Authorization
