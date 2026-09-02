@@ -1,4 +1,4 @@
-﻿# 📚 Nodejs Courses API
+# 📚 Nodejs Courses API
 
 A RESTful API built with **Node.js**, **Express**, and **MongoDB (Mongoose)** for managing online courses and users with JWT authentication and role-based access control.
 
@@ -80,6 +80,63 @@ Authorization: Bearer <your_token>
 | `USER` | Read courses, view profile |
 | `MANAGER` | Create & delete courses |
 | `ADMIN` | Delete courses |
+
+---
+
+## 🔑 How JWT is Generated
+
+The API generates a JWT token automatically during **register** and **login** using the `generateJwt` utility.
+
+### Token Payload
+
+The token encodes the following user data:
+
+```json
+{
+  "email": "john@example.com",
+  "id": "64abc...",
+  "role": "USER"
+}
+```
+
+### Token Settings
+
+| Property | Value |
+|---|---|
+| Algorithm | `HS256` (default) |
+| Secret Key | `JWT_SECRET_KEY` from `.env` |
+| Expiry | `1 minute` (`expiresIn: '1m'`) |
+
+### How it Works (Flow)
+
+```
+User registers / logs in
+        ↓
+Server collects → { email, id, role }
+        ↓
+jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: '1m' })
+        ↓
+Token returned to client
+        ↓
+Client sends: Authorization: Bearer <token>
+        ↓
+verifyToken middleware → jwt.verify(token, JWT_SECRET_KEY)
+        ↓
+Request is allowed ✅ or rejected ❌
+```
+
+### generateJwt Utility (source)
+
+```js
+const jwt = require('jsonwebtoken');
+
+module.exports = async (payload) => {
+  const token = await jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: '1m' });
+  return token;
+};
+```
+
+> ⚠️ **Note:** The token expires after **1 minute**. You must login again to get a new token.
 
 ---
 
